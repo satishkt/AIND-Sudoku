@@ -1,3 +1,6 @@
+import collections
+import operator
+
 assignments = []
 
 rows = 'ABCDEFGHI'
@@ -28,21 +31,33 @@ def naked_twins(values):
         the values dictionary with the naked twins eliminated from peers.
     """
     # Find all instances of naked twins -- boxes with len =2
-    display(values)
+    #display(values)
     col_units=colUnits()
     #p=dict((s, [u for u in col_units if s in u]) for s in boxes())
     p = peers()
-    twins_boxes = [box for box in values.keys() if len(values[box]) == 2]
-    for box in twins_boxes:
-        digits = values[box]
-        #print("box = {} , digits = {}".format(box,digits))
-        for peer in p[box]:
-            if(len(values[peer])>2):
-                val_in_peer=values[peer]
-                val_to_replace=''.join([c for c in val_in_peer if c not in digits])
-               # print("replacing box {} value {} removing digits {} with final value {} ".format(peer,values[peer],digits,val_to_replace))
-                assign_value(values,peer,val_to_replace)
-            #values[peer] = values[peer].replace(digit, '')
+    print("**************************************************************************************************")
+
+    potential_twins_boxes = [box for box in values.keys() if len(values[box]) == 2]
+
+    #Build a subdict of potential twins
+    potential_twins_boxes_dict = {k:values[k] for k in potential_twins_boxes}
+    #Count the values:
+    value_occurrences = collections.Counter(potential_twins_boxes_dict.values())
+    #then filter out the ones that appear more than once:
+    naked_twins = {key: value for key, value in potential_twins_boxes_dict.items()
+                     if value_occurrences[value]  ==2 }
+    twin_vals = set(naked_twins.values())
+    for val in twin_vals:
+        nk_boxes = [k for k, v in naked_twins.items() if v == val] ## should return two boxes.
+        ##find peers of both the boxes
+        peers_box1=set(p[nk_boxes[0]])
+        peers_box2=set(p[nk_boxes[1]])
+        digits=values[nk_boxes[0]] ## the value we are planning to replace -- the twin prime value
+        all_peers= peers_box1.intersection(peers_box2)
+        for peer in all_peers:
+            val_in_peer = values[peer] ### value the peer holds currently
+            val_to_replace = ''.join([c for c in val_in_peer if c not in digits])
+            assign_value(values, peer, val_to_replace)
     print("**************************************************************************************************")
     display(values)
     return values
@@ -238,7 +253,7 @@ def solve(grid):
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
-    display(solve(diag_sudoku_grid))
+    #display(solve(diag_sudoku_grid))
 
     try:
         from visualize import visualize_assignments
