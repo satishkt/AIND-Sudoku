@@ -5,6 +5,7 @@ assignments = []
 
 rows = 'ABCDEFGHI'
 cols = '123456789'
+isDiagnol=1
 
 
 def assign_value(values, box, value):
@@ -31,38 +32,31 @@ def naked_twins(values):
         the values dictionary with the naked twins eliminated from peers.
     """
     # Find all instances of naked twins -- boxes with len =2
-    #print("**************************************************************************************************")
-    #display(values)
-    col_units=colUnits()
-    #p=dict((s, [u for u in col_units if s in u]) for s in boxes())
     p = peers()
-    #print("**************************************************************************************************")
-
     potential_twins_boxes = [box for box in values.keys() if len(values[box]) == 2]
 
-    #Build a subdict of potential twins
-    potential_twins_boxes_dict = {k:values[k] for k in potential_twins_boxes}
+    # Build a subdict of potential twins
+    potential_twins_boxes_dict = {k: values[k] for k in potential_twins_boxes}
 
     # For a box in potential twins, find another box in peer of box1 which has same value as box1 --> naked twin
-    naked_twins=[[box1,box2] for box1 in potential_twins_boxes for box2 in p[box1] if values[box1]==values[box2]]
-
+    naked_twins = [[box1, box2] for box1 in potential_twins_boxes for box2 in p[box1] if values[box1] == values[box2]]
 
     for i in range(len(naked_twins)):
 
-        box1=naked_twins[i][0]
-        box2=naked_twins[i][1]
+        box1 = naked_twins[i][0]
+        box2 = naked_twins[i][1]
 
-        peers_box1 =  set(p[box1])
+        peers_box1 = set(p[box1])
         peers_box2 = set(p[box2])
 
-        digits=values[box1] ## the value we are planning to replace -- the twin prime value
-        all_peers= peers_box1.intersection(peers_box2)
+        digits = values[box1]  # the value we are planning to replace -- the twin prime value
+        all_peers = peers_box1.intersection(peers_box2)
         for peer in all_peers:
-            val_in_peer = values[peer] ### value the peer holds currently
+            val_in_peer = values[peer]  ### value the peer holds currently
             val_to_replace = ''.join([c for c in val_in_peer if c not in digits])
-            #print("Replacing value {}  in box {} with {} -- twin value {}".format(val_in_peer,peer,val_to_replace,digits))
+            # print("Replacing value {}  in box {} with {} -- twin value {}".format(val_in_peer,peer,val_to_replace,digits))
             assign_value(values, peer, val_to_replace)
-#    display(values)
+            #    display(values)
     return values
     # Eliminate the naked twins as possibilities for their peers
 
@@ -123,6 +117,9 @@ def reduce_puzzle(values):
         # use only choice to fill up
         values = only_choice(values)
 
+        # naked twins
+        values = naked_twins(values)
+
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
         # If no new values were added, stop the loop.
         stalled = solved_values_before == solved_values_after
@@ -176,13 +173,23 @@ def squareUnits():
 
 
 def units():
-    unitlist = rowUnits() + colUnits() + squareUnits()
+    if isDiagnol == 0:
+        unitlist = rowUnits() + colUnits() + squareUnits()
+    elif isDiagnol == 1:
+        unitlist = rowUnits() + colUnits() + squareUnits() + diagnol_boxes()
     return dict((s, [u for u in unitlist if s in u]) for s in boxes())
 
 
 def peers():
     peers = dict((s, set(sum(units()[s], [])) - set([s])) for s in boxes())
     return peers
+
+
+def diagnol_boxes():
+    d1 = [[rows[i] + cols[i] for i in range(len(rows))]]
+    cols_reversed = cols[::-1]
+    d2 = [[rows[i] + cols_reversed[i] for i in range(len(rows))]]
+    return d1 + d2
 
 
 def eliminate(values):
@@ -197,8 +204,8 @@ def eliminate(values):
     for box in solved_values:
         digit = values[box]
         for peer in p[box]:
-            assign_value(values,peer,values[peer].replace(digit, ''))
-            #values[peer] = values[peer].replace(digit, '')
+            assign_value(values, peer, values[peer].replace(digit, ''))
+            # values[peer] = values[peer].replace(digit, '')
     return values
 
 
@@ -234,8 +241,8 @@ def fillUpUnits(unitlist, values):
 
             if (len(splaces) == 1):
                 # print("Setting the value at " + splaces[0] + " to " + digit)
-                #values[splaces[0]] = digit
-                assign_value(values,splaces[0],digit)
+                # values[splaces[0]] = digit
+                assign_value(values, splaces[0], digit)
                 # splaces = [box for box in unit if digit in values[box]]
                 # print("Boxes with only " + digit + " in them " + ','.join(splaces))
                 # if (len(splaces) == 1):
@@ -252,11 +259,14 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
+    values = grid_values(grid)
+    values = search(values)
+    return values
 
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
-    #display(solve(diag_sudoku_grid))
+    # display(solve(diag_sudoku_grid))
 
     try:
         from visualize import visualize_assignments
