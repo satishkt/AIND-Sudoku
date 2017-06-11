@@ -3,11 +3,15 @@
 
 # Question 1 (Naked Twins)
 Q: How do we use constraint propagation to solve the naked twins problem?  
-A: *Student should provide answer here*
+A: Naked Twins is another constraint that we apply to narrow down the potential solutions for a given box in the sudoku problem. To apply naked twins constraint, we first identify all the boxes
+that have only two possible solutions from earlier constraints. Once we get these boxes, we look at each box , and its peers to identify which of the peers have the same value as the box.
+Once we have these two boxes, we identify their peers and replace all boxes which contains both these digits with ''. Applying this constraint repeatedly along with the others (eliminate and only choice)
+we narrow down to possible solution if one exists.
 
 # Question 2 (Diagonal Sudoku)
 Q: How do we use constraint propagation to solve the diagonal sudoku problem?  
-A: *Student should provide answer here*
+A: Since a diagonal sudoku only adds an extra constraint to what we consider units, we add the list of diagnol boxes to the units and peers definition and that adds. So the diagnolity condition
+gets applied automatically since we use the concepts of units/peers across all constraint propogation as part of solution.
 
 ### Install
 
